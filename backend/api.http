@@ -2,9 +2,9 @@ POST http://localhost:9080/register HTTP/1.1
 Content-Type: application/json
 
 {
-  "name": "Asif",
-  "userName": "asif",
-  "email": "asif@gmail.com",
+  "name": "basha",
+  "userName": "basha",
+  "email": "basha@gmail.com",
   "password": "1234567"
 }
 
@@ -16,18 +16,48 @@ Content-Type: application/json
 
 { 
     "password":"1234567", 
-    "email":"asif@gmail.com" 
+    "email":"basha@gmail.com" 
 
 } 
 
 ### To Login another User 
 
-GET http://localhost:9080/get_user_and_profile 
+POST http://localhost:9080/get_user_and_profile 
 Content-Type: application/json 
 
 
 {
-  "token": "8837771d5b2ddaa9c3dd0beab3699c322af2b043c939b977ef6f22d67f9b9076"
+  "token": "677f58d27828e7c6498b7b2ee46afa113bf2381d23c6f8320a5680a32501689f"
 }
 
+### To Update Profile Data  
+
+POST http://localhost:9080/update_profile_data HTTP/1.1 
+Content-Type: application/json 
+
+
+{
+  "token": "677f58d27828e7c6498b7b2ee46afa113bf2381d23c6f8320a5680a32501689f",
+  "bio": "I'm a Software Engineer",
+  "currentPost": "Software Engineer II",
+  "pastWork": [
+    {
+      "company": "Microsoft",
+      "position": "Software Engineer",
+      "years": 2
+    }
+  ],
+  "education": [
+    {
+      "school": "IIT Delhi",
+      "degree": "B.Tech",
+      "fieldOfStudy": "Computer Science"
+    }
+  ]
+}
+
+
+### To get all Users Profile  
+
+GET http://localhost:9080/get_all_users HTTP/1.1 
  

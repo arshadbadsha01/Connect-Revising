@@ -3,6 +3,17 @@ import User from "../models/user.models.js";
 
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import PDFDocument from "pdfkit";
+
+// A Function to convert User Data into PDF Page
+
+const convertUserDataToPDF = (userData) => {
+  const doc = new PDFDocument();
+
+  const outputPath = crypto.randomBytes(32).toString("hex") + ".pdf"; // const fullPath = uploads/${outputPath};
+};
+
+// To Register
 
 export const register = async (req, res) => {
   try {
@@ -12,29 +23,25 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const user = await User.findOne({
-      email,
-    });
-
-    if (user) return res.status(400).json({ message: "User already exists" });
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
+    // ✅ SAVE USER FIRST
+    const newUser = await User.create({
       name,
-
       email,
-
       password: hashedPassword,
-
       userName,
     });
 
-    await newUser.save();
+    // ✅ THEN CREATE PROFILE
+    await Profile.create({ userId: newUser._id });
 
-    const profile = new Profile({ userId: newUser._id });
-
-    return res.json({ message: "User Created" });
+    return res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -149,6 +156,80 @@ export const getUserProfile = async (req, res) => {
     );
 
     return res.status(200).json({ userProfile });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To Update User's Profile Data
+
+export const updateProfileData = async (req, res) => {
+  try {
+    const { token, ...newProfileData } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token is required" });
+    }
+
+    const user = await User.findOne({ token: token });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const profile = await Profile.findOne({ userId: user._id });
+
+    if (!profile) {
+      return res.status(404).json({ message: "Profile not found" });
+    } // Update profile fields
+
+    Object.assign(profile, newProfileData);
+
+    await profile.save();
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+
+      profile,
+    });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To get all user exist in db
+
+export const getAllUserProfile = async (req, res) => {
+  try {
+    const profiles = await Profile.find().populate(
+      "userId",
+
+      "name email userName profilePicture"
+    );
+
+    return res.json({ profiles });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To download the resume of A user
+
+export const downloadProfile = async (req, res) => {
+  try {
+    const userId = req.query.id;
+
+    const userProfile = await Profile.findOne({ userId: userId }).populate(
+      "userId",
+
+      "name userName email profilePicture"
+    );
+
+    let outputPath = await convertUserDataToPDF(userProfile);
+
+    return res.json({ message: outputPath });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

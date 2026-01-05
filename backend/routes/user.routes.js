@@ -4,7 +4,10 @@ import {
   login,
   uploadProfilePicture,
   updateUserProfile,
-  getUserProfile
+  getUserProfile,
+  updateProfileData,
+  getAllUserProfile,
+  downloadProfile,
 } from "../controllers/user.controller.js";
 import multer from "multer";
 
@@ -28,6 +31,9 @@ router
 router.route("/register").post(register);
 router.route("/login").post(login);
 router.route("/user_update").post(updateUserProfile);
-router.route("/get_user_and_profile").get(getUserProfile);
+router.route("/get_user_and_profile").post(getUserProfile);
+router.route("/update_profile_data").post(updateProfileData);
+router.route("/get_all_users").get(getAllUserProfile);
+router.route("/download_resume").get(downloadProfile);
 
 export default router;
