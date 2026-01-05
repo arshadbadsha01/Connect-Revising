@@ -26,7 +26,7 @@ const uploads = multer({ storage: storage });
 
 router
   .route("/update_profile_picture")
-  .post(uploads.single("profile_picture"), uploadProfilePicture);
+  .post(uploads.single("profile_picture"), uploadProfilePicture, getAllUserProfile );
 
 router.route("/register").post(register);
 router.route("/login").post(login);

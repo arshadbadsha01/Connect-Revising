@@ -4,14 +4,65 @@ import User from "../models/user.models.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import PDFDocument from "pdfkit";
+import fs from "fs";
 
 // A Function to convert User Data into PDF Page
 
 const convertUserDataToPDF = (userData) => {
   const doc = new PDFDocument();
 
-  const outputPath = crypto.randomBytes(32).toString("hex") + ".pdf"; // const fullPath = uploads/${outputPath};
-};
+  const outputPath = crypto.randomBytes(32).toString("hex") + ".pdf"; 
+  // const fullPath = uploads/${outputPath};
+  const stream = fs.createWriteStream(fullPath); 
+
+ 
+
+  doc.pipe(stream); 
+
+ 
+
+    doc.image(`uploads/${userData.userId.profilePicture}`, { 
+
+        align: "center", 
+
+        width: 100, 
+
+      }); 
+
+    doc.fontSize(14).text(`Name: ${userData.userId.name}`); 
+
+    doc.fontSize(14).text(`Username: ${userData.userId.userName}`); 
+
+    doc.fontSize(14).text(`Email: ${userData.userId.email}`); 
+
+    doc.fontSize(14).text(`Bio: ${userData.bio}`); 
+
+    doc.fontSize(14).text(`Current Position: ${userData.currentPost}`); 
+
+ 
+
+    doc.fontSize(14).text("Past Work:"); 
+
+    userData.pastWork.forEach((work, index) => { 
+
+      doc.fontSize(14).text(`Company Name: ${work.company}`); 
+
+      doc.fontSize(14).text(`Position: ${work.position}`); 
+
+      doc.fontSize(14).text(`Years: ${work.years}`); 
+
+      doc.moveDown(); 
+
+    }) 
+
+ 
+     doc.end(); 
+
+
+     return outputPath; 
+
+
+  } 
 
 // To Register
 
