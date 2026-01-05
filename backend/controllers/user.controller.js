@@ -40,6 +40,7 @@ export const register = async (req, res) => {
   }
 };
 
+// To login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -94,6 +95,60 @@ export const uploadProfilePicture = async (req, res) => {
       .status(201)
 
       .json({ message: "Profile picture updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To Update the profile picture of user
+
+export const updateUserProfile = async (req, res) => {
+  console.log(req.body);
+
+  try {
+    const { token, ...newUserData } = req.body;
+
+    const user = await User.findOne({ token: token });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const { userName, email } = newUserData;
+
+    const existingUser = await User.findOne({ $or: [{ userName }, { email }] });
+
+    if (existingUser) {
+      if (existingUser || String(existingUser._id) !== String(user._id)) {
+        return res.status(400).json({ message: "User already exist" });
+      }
+    }
+
+    Object.assign(user, newUserData);
+
+    await user.save();
+
+    return res.status(201).json({ message: "User updated" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To Get user Profile that Have Logged In
+
+export const getUserProfile = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const user = await User.findOne({ token: token });
+
+    if (!user) return res.status(404).json({ message: "User not Found" });
+
+    const userProfile = await Profile.findOne({ userId: user._id }).populate(
+      "userId",
+
+      "name email userName profilePicture"
+    );
+
+    return res.status(200).json({ userProfile });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
