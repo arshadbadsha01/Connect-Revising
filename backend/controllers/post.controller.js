@@ -37,3 +37,53 @@ export const createPost = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+// To get all post's
+
+export const getAllPosts = async (req, res) => {
+  try {
+    const posts = await Post.find().populate(
+      "userId",
+
+      "name userName emil profilePicture"
+    );
+
+    return res.json({ posts });
+  } catch (error) {
+    return res.status(500).json({ message: error.error });
+  }
+};
+
+// To delete a Specific post
+
+export const deletePost = async (req, res) => {
+  try {
+    const { token, postId } = req.body;
+
+    if (!token || !postId) {
+      return res.status(400).json({ message: "Bad Request" });
+    }
+
+    const user = await User.findOne({ token: token }).select("_id");
+
+    if (!user) {
+      return res.json(404).json({ message: "User not Found" });
+    }
+
+    const post = await Post.findOne({ _id: postId });
+
+    if (!post) {
+      return res.json(404).json({ message: "Post not Found" });
+    }
+
+    if (post.userId.toString() != user._id.toString()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    post.deleteOne({ _id: postId });
+
+    return res.json({ message: "Post Deleted" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
