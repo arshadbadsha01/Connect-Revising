@@ -27,7 +27,7 @@ Content-Type: application/json
 
 
 {
-  "token": "677f58d27828e7c6498b7b2ee46afa113bf2381d23c6f8320a5680a32501689f"
+  "token": "e94060f1627c7c53ec262fe931c7100a020e6a4737db505e212e9969992801da"
 }
 
 ### To Update Profile Data  
@@ -37,7 +37,7 @@ Content-Type: application/json
 
 
 {
-  "token": "677f58d27828e7c6498b7b2ee46afa113bf2381d23c6f8320a5680a32501689f",
+  "token": "e94060f1627c7c53ec262fe931c7100a020e6a4737db505e212e9969992801da",
   "bio": "I'm a Software Engineer",
   "currentPost": "Software Engineer II",
   "pastWork": [
