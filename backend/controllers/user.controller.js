@@ -11,58 +11,44 @@ import fs from "fs";
 const convertUserDataToPDF = (userData) => {
   const doc = new PDFDocument();
 
-  const outputPath = crypto.randomBytes(32).toString("hex") + ".pdf"; 
+  const outputPath = crypto.randomBytes(32).toString("hex") + ".pdf";
   // const fullPath = uploads/${outputPath};
-  const stream = fs.createWriteStream(fullPath); 
+  const stream = fs.createWriteStream(fullPath);
 
- 
+  doc.pipe(stream);
 
-  doc.pipe(stream); 
+  doc.image(`uploads/${userData.userId.profilePicture}`, {
+    align: "center",
 
- 
+    width: 100,
+  });
 
-    doc.image(`uploads/${userData.userId.profilePicture}`, { 
+  doc.fontSize(14).text(`Name: ${userData.userId.name}`);
 
-        align: "center", 
+  doc.fontSize(14).text(`Username: ${userData.userId.userName}`);
 
-        width: 100, 
+  doc.fontSize(14).text(`Email: ${userData.userId.email}`);
 
-      }); 
+  doc.fontSize(14).text(`Bio: ${userData.bio}`);
 
-    doc.fontSize(14).text(`Name: ${userData.userId.name}`); 
+  doc.fontSize(14).text(`Current Position: ${userData.currentPost}`);
 
-    doc.fontSize(14).text(`Username: ${userData.userId.userName}`); 
+  doc.fontSize(14).text("Past Work:");
 
-    doc.fontSize(14).text(`Email: ${userData.userId.email}`); 
+  userData.pastWork.forEach((work, index) => {
+    doc.fontSize(14).text(`Company Name: ${work.company}`);
 
-    doc.fontSize(14).text(`Bio: ${userData.bio}`); 
+    doc.fontSize(14).text(`Position: ${work.position}`);
 
-    doc.fontSize(14).text(`Current Position: ${userData.currentPost}`); 
+    doc.fontSize(14).text(`Years: ${work.years}`);
 
- 
+    doc.moveDown();
+  });
 
-    doc.fontSize(14).text("Past Work:"); 
+  doc.end();
 
-    userData.pastWork.forEach((work, index) => { 
-
-      doc.fontSize(14).text(`Company Name: ${work.company}`); 
-
-      doc.fontSize(14).text(`Position: ${work.position}`); 
-
-      doc.fontSize(14).text(`Years: ${work.years}`); 
-
-      doc.moveDown(); 
-
-    }) 
-
- 
-     doc.end(); 
-
-
-     return outputPath; 
-
-
-  } 
+  return outputPath;
+};
 
 // To Register
 
@@ -281,6 +267,122 @@ export const downloadProfile = async (req, res) => {
     let outputPath = await convertUserDataToPDF(userProfile);
 
     return res.json({ message: outputPath });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To create a connection Requset between User's
+
+export const sendConnectionRequest = async (req, res) => {
+  try {
+    const { token, connectionId } = req.body;
+
+    const user = await User.findOne({ token: token });
+
+    const connection = await User.findOne({ _id: connectionId });
+
+    if (!user || !connection) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const exitingRequest = await Connection.findOne({
+      userId: user._id,
+
+      connectionId: connectionId,
+    });
+
+    if (exitingRequest) {
+      return res.status(400).json({ message: "Request already exist" });
+    }
+
+    const newConnection = new Connection({
+      userId: user._id,
+
+      connectionId: connectionId,
+    });
+
+    await newConnection.save();
+
+    return res.status(201).json({ message: "Request Send" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To create a connection Requset between User's
+
+export const getMyConnectionRequests = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const user = await User.findOne({ token: token });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const connections = await Connection.find({ userId: user._id }).populate(
+      "connectionId",
+
+      "name userName email profilePicture"
+    );
+
+    return res.status(201).json(connections);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To Know the data of What are my Connections
+
+export const whatAreMyConnections = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    const user = await User.findOne({ token: token });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const connections = await Connection.find({
+      connectionId: user._id,
+    }).populate("connectionId", "name userName email profilePicture");
+
+    return res.status(201).json(connections);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+// To Accept or Reject the Connection Request
+
+export const acceptConnectionRequest = async (req, res) => {
+  try {
+    const { token, requestId, actionType } = req.body;
+
+    const user = await User.findOne({ token: token });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const connection = await Connection.findOne({ userId: requestId });
+
+    if (!connection) {
+      return res.status(401).json({ message: "Connection not Found" });
+    }
+
+    if (actionType === "accept") {
+      connection.statusAccepted = true;
+    } else {
+      connection.statusAccepted = false;
+    }
+
+    await connection.save();
+
+    return res.status(200).json({ message: "Request updated" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

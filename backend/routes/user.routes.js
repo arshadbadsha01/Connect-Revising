@@ -8,6 +8,10 @@ import {
   updateProfileData,
   getAllUserProfile,
   downloadProfile,
+  sendConnectionRequest,
+  getMyConnectionRequests,
+  whatAreMyConnections,
+  acceptConnectionRequest
 } from "../controllers/user.controller.js";
 import multer from "multer";
 
@@ -26,7 +30,11 @@ const uploads = multer({ storage: storage });
 
 router
   .route("/update_profile_picture")
-  .post(uploads.single("profile_picture"), uploadProfilePicture, getAllUserProfile );
+  .post(
+    uploads.single("profile_picture"),
+    uploadProfilePicture,
+    getAllUserProfile
+  );
 
 router.route("/register").post(register);
 router.route("/login").post(login);
@@ -35,5 +43,9 @@ router.route("/get_user_and_profile").post(getUserProfile);
 router.route("/update_profile_data").post(updateProfileData);
 router.route("/get_all_users").get(getAllUserProfile);
 router.route("/download_resume").get(downloadProfile);
+router.route("/user/send_connection_request").post(sendConnectionRequest);
+router.route("/user/get_connection_requests").get(getMyConnectionRequests);
+router.route("/user/user_connection_request").get(whatAreMyConnections);
+router.route("/user/accept_connection_request").post(acceptConnectionRequest);
 
 export default router;
